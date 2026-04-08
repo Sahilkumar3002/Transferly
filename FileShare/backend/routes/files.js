@@ -23,7 +23,7 @@ const storage = new CloudinaryStorage({
     public_id: (req, file) => `${Date.now()}-${Math.round(Math.random() * 1e9)}`,
   },
 });
-const upload = multer({ storage, limits: { fileSize: 100 * 1024 * 1024 } }); // 100MB max per file limit
+const upload = multer({ storage }); // No file size limit
 
 // POST /api/files/upload
 router.post('/upload', upload.single('file'), async (req, res) => {

@@ -8,7 +8,7 @@
 **When they ask:** *"Tell me about a recent project you built."* or *"Walk me through your resume."*
 
 > **What to say:**
-> *"I recently built and deployed a full-stack file-sharing app called Transferly — basically like a mini WeTransfer. Users can upload files up to 100MB, and the API instantly generates a secure, shareable download link.
+> *"I recently built and deployed a full-stack file-sharing app called Transferly — basically like a mini WeTransfer. Users can upload files of any size, and the API instantly generates a secure, shareable download link.
 >
 > I built the backend using Node.js and Express, and I used Multer with Cloudinary to handle file uploads and store them in the cloud. I also integrated MongoDB Atlas to store the file metadata. To keep things clean, I used a MongoDB TTL index to automatically expire file records after 24 hours. The whole thing is deployed on Vercel — both front and backend — and it's live in production right now. It was a great full-stack project that taught me a lot about cloud storage, serverless deployment, and handling binary data end-to-end."*
 
