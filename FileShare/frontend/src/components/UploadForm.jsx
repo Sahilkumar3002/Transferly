@@ -27,7 +27,7 @@ const UploadForm = ({ onUploadSuccess }) => {
         setError(null);
 
         try {
-            const response = await axios.post('http://localhost:5000/api/files/upload', formData, {
+            const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/files/upload`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             onUploadSuccess(response.data.file); // Assuming backend returns { file: "<url>" }

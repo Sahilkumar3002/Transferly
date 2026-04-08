@@ -12,7 +12,7 @@ const DownloadPage = () => {
     useEffect(() => {
         const fetchDetails = async () => {
             try {
-                const response = await axios.get(`http://localhost:5000/api/files/${uuid}`);
+                const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/files/${uuid}`);
                 setFileDetails(response.data);
             } catch (err) {
                 setError(err.response?.data?.error || "File not found or link expired");
@@ -25,7 +25,7 @@ const DownloadPage = () => {
     }, [uuid]);
 
     const handleDownload = () => {
-        window.location.href = `http://localhost:5000/api/files/download/${uuid}`;
+        window.location.href = `${import.meta.env.VITE_BACKEND_URL}/api/files/download/${uuid}`;
     };
 
     const formatSize = (bytes) => {
