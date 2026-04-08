@@ -10,9 +10,11 @@
 **When they ask:** *"Tell me about a recent project you built."*
 
 > **What to say:**
-> "I recently built the backend for Transferly, a MERN stack file-sharing app I did as a group project. While my team handled the React frontend, I took full ownership of the Node.js backend.
+> "I worked on a group project called Transferly and handled the backend part.
 > 
-> I focused on solving real data limits. I used **MongoDB GridFS** and **Node.js Memory Buffers** to stream incoming files, which means users can upload huge files without the server crashing. I also used **MongoDB TTL Indexes** to automatically delete files after 24 hours. Finally, I deployed the backend to **Render** to bypass Vercel's strict upload size limits."
+> I **handled large files** by using **Node.js Memory Buffers** and streaming. To **store data, I used MongoDB Atlas** with **GridFS**, which splits files into small chunks so they don't crash the server.
+> 
+> I also used **TTL Indexes** to auto-delete files after 24 hours. Finally, I deployed it on **Render** so we could bypass upload limits and support unlimited file sizes."
 
 ---
 
