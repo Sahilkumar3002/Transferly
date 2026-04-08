@@ -10,16 +10,16 @@
 **When they ask:** *"Tell me about a recent project you built."*
 
 > **What to say:**
-> "I worked on a group project called Transferly and built the backend using the **MERN stack**.
-> Users can upload any file size, and the API instantly generates a **secure download link**.
+> "I worked on a group project called Transferly and handled the **MERN stack backend**.
+> Users can **upload any file size** and the API generates a **secure download link** instantly.
 > 
 > I **handled large files** by using **Node.js Memory Buffers** and streaming them directly.
 > To **store data, I used MongoDB Atlas** with **GridFS**, which breaks big files into small chunks.
-> This **streaming architecture** ensures our RAM never spikes even for massive uploads.
+> This setup saves our server's RAM and prevents it from crashing during big uploads.
 > 
-> For **downloads**, I used GridFS streams to pipe data directly to the user for fast performance.
-> I also added **TTL Indexes** to auto-delete files after 24 hours and keep the database clean.
-> **I deployed the frontend to Vercel and the backend to Render** so users can **upload large files** easily without any size limits."
+> I also used **GridFS streams for downloads** to make the file retrieval fast and smooth.
+> I added **TTL Indexes** to auto-delete files after 24 hours and keep our database clean.
+> Finally, I **deployed to Vercel and Render** so we could support **unlimited file sizes**."
 
 ---
 
