@@ -27,16 +27,16 @@ const UploadForm = ({ onUploadSuccess }) => {
         setProgress(0);
 
         try {
-            // Step 1: Upload directly to Cloudinary (bypasses Vercel's 4.5MB limit)
-            const cloudinaryData = new FormData();
-            cloudinaryData.append('file', file);
-            cloudinaryData.append('upload_preset', import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET);
-            cloudinaryData.append('folder', 'transferly_uploads');
+            // Upload the file as multipart/form-data directly to our backend.
+            // The backend buffers it in RAM, then streams it into MongoDB GridFS.
+            const formData = new FormData();
+            formData.append('file', file);
 
-            const cloudinaryRes = await axios.post(
-                `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/auto/upload`,
-                cloudinaryData,
+            const response = await axios.post(
+                `${import.meta.env.VITE_BACKEND_URL}/api/files/upload`,
+                formData,
                 {
+                    headers: { 'Content-Type': 'multipart/form-data' },
                     onUploadProgress: (e) => {
                         const percent = Math.round((e.loaded * 100) / e.total);
                         setProgress(percent);
@@ -44,16 +44,16 @@ const UploadForm = ({ onUploadSuccess }) => {
                 }
             );
 
-            // Step 2: Register the file metadata with our backend
-            const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/files/register`, {
-                filename: file.name,
-                cloudinaryUrl: cloudinaryRes.data.secure_url,
-                size: file.size
-            });
-
             onUploadSuccess(response.data.file);
         } catch (err) {
-            setError(err.response?.data?.error || "Failed to upload file");
+            console.error('Upload error:', err);
+            if (err.response?.data?.error?.message) {
+                setError(err.response.data.error.message);
+            } else if (typeof err.response?.data?.error === 'string') {
+                setError(err.response.data.error);
+            } else {
+                setError(err.message || "Failed to upload file");
+            }
         } finally {
             setUploading(false);
         }
@@ -61,7 +61,6 @@ const UploadForm = ({ onUploadSuccess }) => {
 
     return (
         <div className="w-full max-w-lg mx-auto p-10 rounded-3xl glass flex flex-col items-center gap-8 transition-all duration-500 transform hover:scale-[1.01] hover:shadow-[0_8px_40px_-12px_rgba(20,184,166,0.3)] relative overflow-hidden group">
-            {/* Subtle inner glow */}
             <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent pointer-events-none rounded-3xl"></div>
 
             <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-teal-500/20 to-blue-500/20 flex flex-col items-center justify-center border border-white/10 shadow-inner group-hover:scale-110 transition-transform duration-500">
@@ -78,7 +77,9 @@ const UploadForm = ({ onUploadSuccess }) => {
                     onChange={handleFileChange}
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                 />
-                <div className={`w-full p-8 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center gap-4 transition-all duration-300 ${file ? 'border-teal-400/50 bg-teal-400/10 shadow-[0_0_20px_rgba(20,184,166,0.15)]' : 'border-gray-600/50 group-hover:border-teal-400/50 hover:bg-white/5'
+                <div className={`w-full p-8 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center gap-4 transition-all duration-300 ${file
+                        ? 'border-teal-400/50 bg-teal-400/10 shadow-[0_0_20px_rgba(20,184,166,0.15)]'
+                        : 'border-gray-600/50 group-hover:border-teal-400/50 hover:bg-white/5'
                     }`}>
                     {file ? (
                         <>
@@ -96,7 +97,7 @@ const UploadForm = ({ onUploadSuccess }) => {
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400 group-hover:text-teal-400 transition-colors"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" x2="12" y1="3" y2="15"></line></svg>
                             </div>
                             <span className="text-gray-300 font-semibold text-lg">Click or Drag file here</span>
-                            <span className="text-gray-500 text-sm">Any file type & size supported</span>
+                            <span className="text-gray-500 text-sm">Any file type • Stored in MongoDB GridFS</span>
                         </>
                     )}
                 </div>
@@ -115,7 +116,12 @@ const UploadForm = ({ onUploadSuccess }) => {
                 </div>
             )}
 
-            {error && <div className="w-full p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm font-medium flex items-center justify-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" x2="12" y1="8" y2="12"></line><line x1="12" x2="12.01" y1="16" y2="16"></line></svg>{error}</div>}
+            {error && (
+                <div className="w-full p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm font-medium flex items-center justify-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" x2="12" y1="8" y2="12"></line><line x1="12" x2="12.01" y1="16" y2="16"></line></svg>
+                    {error}
+                </div>
+            )}
 
             <button
                 onClick={handleUpload}

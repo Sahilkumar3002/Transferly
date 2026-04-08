@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: transferly-backend
+    runtime: node
+    rootDir: FileShare/backend
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false
+      - key: FRONTEND_URL
+        sync: false

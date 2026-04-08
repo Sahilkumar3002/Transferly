@@ -1,53 +1,42 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
+const express  = require('express');
+const mongoose  = require('mongoose');
+const cors      = require('cors');
 require('dotenv').config();
 
 const app = express();
 
-// Middleware
+// ─── Middleware ───────────────────────────────────────────────────────────────
 app.use(express.json());
 app.use(cors({
     origin: process.env.FRONTEND_URL || '*'
 }));
 
-// Lazy MongoDB connection - connect on first request, not on cold start
-let isConnected = false;
+// ─── MongoDB Connection ───────────────────────────────────────────────────────
+// On Render (persistent server) we connect once at startup, not lazily.
 const connectDB = async () => {
-    if (isConnected) return;
     try {
         await mongoose.connect(process.env.MONGODB_URI);
-        isConnected = true;
-        console.log('MongoDB connected');
+        console.log('✅ MongoDB + GridFS connected');
     } catch (err) {
-        console.error('MongoDB connection error:', err);
-        throw err;
+        console.error('❌ MongoDB connection error:', err);
+        process.exit(1); // Crash + restart on Render if DB is unreachable
     }
 };
 
-// Connect DB before every request
-app.use(async (req, res, next) => {
-    try {
-        await connectDB();
-        next();
-    } catch (err) {
-        res.status(500).json({ error: 'Database connection failed' });
-    }
-});
-
-// Routes
+// ─── Routes ───────────────────────────────────────────────────────────────────
 app.use('/api/files', require('./routes/files'));
 
-// Health check
-app.get('/', (req, res) => res.json({ status: 'Transferly API is running' }));
+app.get('/', (req, res) => res.json({
+    status: 'Transferly API running',
+    storage: 'MongoDB GridFS (streaming + buffer)',
+    host: 'Render'
+}));
 
-// Start server locally only
-if (process.env.NODE_ENV !== 'production') {
-    const PORT = process.env.PORT || 5000;
-    app.listen(PORT, () => {
-        console.log(`Server is running on port ${PORT}`);
-    });
-}
+// ─── Start ────────────────────────────────────────────────────────────────────
+const PORT = process.env.PORT || 5000;
+
+connectDB().then(() => {
+    app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+});
 
 module.exports = app;
-
