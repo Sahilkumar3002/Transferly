@@ -19,7 +19,7 @@
 > 
 > For **downloads**, I used GridFS streams to pipe data directly to the user for fast performance.
 > I also added **TTL Indexes** to auto-delete files after 24 hours and keep the database clean.
-> Finally, I moved the backend to **Render** so users can **upload large files** easily without any size limits."
+> **I deployed the frontend to Vercel and the backend to Render** so users can **upload large files** easily without any size limits."
 
 ---
 
