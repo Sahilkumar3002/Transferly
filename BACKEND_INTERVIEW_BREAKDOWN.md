@@ -59,6 +59,12 @@
 * **Action:** *"I implemented the `cors` middleware and set the `origin` to the exact frontend URL via an environment variable, rather than using a dangerous wildcard (`*`)."*
 * **Result:** *"Only my authorized frontend can make requests to the API."*
 
+### Problem 5: Debugging Deployment Crash Loops (MongoDB IP Whitelist)
+* **Situation:** *"After migrating to Render, the backend deployed successfully but immediately entered a crash loop, returning a `404 Not Found (x-render-routing: no-server)` to the frontend."*
+* **Task:** *"I needed to figure out why the Node process was crashing before it could bind to the port."*
+* **Action:** *"I updated `server.js` to avoid exiting the process (`process.exit(1)`) on database connection failure. This kept the server alive long enough to read the exact error logs. The logs revealed a Mongoose timeout. I realized MongoDB Atlas defaults to blocking all IPs, and because Render uses dynamic IPs, it was blocking my server's connection attempt."*
+* **Result:** *"I added `0.0.0.0/0` to the MongoDB Atlas Network Access whitelist, allowing the server to connect successfully and ending the crash loop."*
+
 ---
 
 ## 4. 🚀 Future Improvements (Shows Strategic Thinking)
