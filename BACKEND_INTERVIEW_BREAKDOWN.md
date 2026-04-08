@@ -10,14 +10,9 @@
 **When they ask:** *"Tell me about a recent project you built."*
 
 > **What to say:**
-> "I recently built Transferly, a MERN stack file-sharing app similar to WeTransfer. Instead of just doing basic CRUD operations, I focused on solving real backend data challenges:
+> "I recently built the backend for Transferly, a MERN stack file-sharing app created as a group project. While my team handled the frontend, I took full ownership of the backend architecture and cloud deployment.
 > 
-> 1. **The GridFS Integration:** I stored large files directly inside my MongoDB database instead of relying on third-party cloud buckets.
-> 2. **Node.js Streams & Memory Buffers:** I handled incoming files entirely in RAM using data streams, so my server never crashes from huge uploads.
-> 3. **MongoDB TTL Indexes:** I automated the entire database cleanup process so files safely self-delete after exactly 24 hours.
-> 4. **Vercel to Render Migration:** I moved my backend off Vercel's serverless platform to bypass strict 4.5MB limits, unlocking unlimited file sizes.
-> 
-> It was a great project for learning advanced backend architecture and cloud deployment!"
+> Instead of just doing basic CRUD operations, I engineered real data solutions: I integrated **MongoDB GridFS** to natively store large files, utilized **Node.js Streams & Memory Buffers** to process huge uploads directly in RAM without crashing, and implemented **TTL Indexes** to automate database cleanup. Finally, I owned the deployment process, successfully migrating the backend from **Vercel to Render** to bypass strict serverless file size limits."
 
 ---
 
