@@ -10,11 +10,14 @@
 **When they ask:** *"Tell me about a recent project you built."*
 
 > **What to say:**
-> "I built Transferly, a full-stack file sharing app similar to WeTransfer. I designed the architecture using the MERN stack: React for the frontend, Node and Express for the backend, and MongoDB for the database. 
+> "I recently built Transferly, a MERN stack file-sharing app similar to WeTransfer. Instead of just doing basic CRUD operations, I focused on solving real backend data challenges:
 > 
-> Rather than paying for a cloud storage service like AWS, I figured out how to stream the files directly into my MongoDB database using a feature called GridFS. Because I used data streams and memory buffers in my Node server, users can upload huge files without the server ever crashing or running out of memory. 
+> 1. **The GridFS Integration:** I stored large files directly inside my MongoDB database instead of relying on third-party cloud buckets.
+> 2. **Node.js Streams & Memory Buffers:** I handled incoming files entirely in RAM using data streams, so my server never crashes from huge uploads.
+> 3. **MongoDB TTL Indexes:** I automated the entire database cleanup process so files safely self-delete after exactly 24 hours.
+> 4. **Vercel to Render Migration:** I moved my backend off Vercel's serverless platform to bypass strict 4.5MB limits, unlocking unlimited file sizes.
 > 
-> Finally, I deployed the frontend to Vercel and the backend to a persistent server on Render."
+> It was a great project for learning advanced backend architecture and cloud deployment!"
 
 ---
 
