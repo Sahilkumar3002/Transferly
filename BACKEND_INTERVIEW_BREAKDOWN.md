@@ -11,15 +11,15 @@
 
 > **What to say:**
 > "I worked on a group project called Transferly and built the backend using the **MERN stack**.
+> Users can upload any file size, and the API instantly generates a **secure download link**.
 > 
 > I **handled large files** by using **Node.js Memory Buffers** and streaming them directly.
 > To **store data, I used MongoDB Atlas** with **GridFS**, which breaks big files into small chunks.
-> The architecture uses a **streaming pipeline** so our RAM never spikes even for massive uploads.
+> This **streaming architecture** ensures our RAM never spikes even for massive uploads.
 > 
 > For **downloads**, I used GridFS streams to pipe data directly to the user for fast performance.
 > I also added **TTL Indexes** to auto-delete files after 24 hours and keep the database clean.
-> We moved from Vercel to **Render** to bypass upload limits and support unlimited file sizes.
-> This setup made the app scalable and robust for real-world file sharing."
+> Finally, I moved to **Render** to bypass Vercel's upload limits and support unlimited file sizes."
 
 ---
 
