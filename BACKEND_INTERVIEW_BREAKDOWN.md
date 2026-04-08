@@ -8,9 +8,11 @@
 **When they ask:** *"Tell me about a recent project you built."*
 
 > **What to say:**
-> "I built Transferly, a full-stack file sharing app similar to WeTransfer. Rather than paying for AWS or Cloudinary to host the files, I figured out how to stream the files directly into my MongoDB database using a feature called GridFS. 
+> "I built Transferly, a full-stack file sharing app similar to WeTransfer. I designed the architecture using the MERN stack: React for the frontend, Node and Express for the backend, and MongoDB for the database. 
 > 
-> Because I used data streams and buffers in Node.js, users can upload huge files, and my server never crashes from running out of memory. The frontend is built in React and deployed on Vercel, and the Express backend runs on Render."
+> Rather than paying for a cloud storage service like AWS, I figured out how to stream the files directly into my MongoDB database using a feature called GridFS. Because I used data streams and memory buffers in my Node server, users can upload huge files without the server ever crashing or running out of memory. 
+> 
+> Finally, I deployed the frontend to Vercel and the backend to a persistent server on Render."
 
 ---
 
