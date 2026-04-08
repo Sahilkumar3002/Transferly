@@ -25,22 +25,26 @@ const storage = new CloudinaryStorage({
 });
 const upload = multer({ storage }); // No file size limit
 
-// POST /api/files/upload
-router.post('/upload', upload.single('file'), async (req, res) => {
-    if (!req.file) return res.status(400).send({ error: 'All fields are required' });
+// POST /api/files/register (receives metadata after frontend uploads directly to Cloudinary)
+router.post('/register', async (req, res) => {
+    const { filename, cloudinaryUrl, size } = req.body;
+    
+    if (!filename || !cloudinaryUrl) {
+        return res.status(400).send({ error: 'Missing required fields' });
+    }
 
     try {
         const file = new File({
-            filename: req.file.originalname, // Using original name since Cloudinary handles unique ids
+            filename: filename,
             uuid: uuidv4(),
-            path: req.file.path, // Cloudinary secure_url is stored here
-            size: req.file.size
+            path: cloudinaryUrl,
+            size: size || 0
         });
         const response = await file.save();
         res.json({ file: `${process.env.FRONTEND_URL}/file/${response.uuid}` });
     } catch (err) {
         console.error(err);
-        res.status(500).send({ error: 'Error uploading file' });
+        res.status(500).send({ error: 'Error registering file' });
     }
 });
 

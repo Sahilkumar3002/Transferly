@@ -6,11 +6,13 @@ const UploadForm = ({ onUploadSuccess }) => {
     const [file, setFile] = useState(null);
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState(null);
+    const [progress, setProgress] = useState(0);
 
     const handleFileChange = (e) => {
         if (e.target.files[0]) {
             setFile(e.target.files[0]);
             setError(null);
+            setProgress(0);
         }
     };
 
@@ -20,17 +22,36 @@ const UploadForm = ({ onUploadSuccess }) => {
             return;
         }
 
-        const formData = new FormData();
-        formData.append('file', file);
-
         setUploading(true);
         setError(null);
+        setProgress(0);
 
         try {
-            const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/files/upload`, formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
+            // Step 1: Upload directly to Cloudinary (bypasses Vercel's 4.5MB limit)
+            const cloudinaryData = new FormData();
+            cloudinaryData.append('file', file);
+            cloudinaryData.append('upload_preset', import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET);
+            cloudinaryData.append('folder', 'transferly_uploads');
+
+            const cloudinaryRes = await axios.post(
+                `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/auto/upload`,
+                cloudinaryData,
+                {
+                    onUploadProgress: (e) => {
+                        const percent = Math.round((e.loaded * 100) / e.total);
+                        setProgress(percent);
+                    }
+                }
+            );
+
+            // Step 2: Register the file metadata with our backend
+            const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/files/register`, {
+                filename: file.name,
+                cloudinaryUrl: cloudinaryRes.data.secure_url,
+                size: file.size
             });
-            onUploadSuccess(response.data.file); // Assuming backend returns { file: "<url>" }
+
+            onUploadSuccess(response.data.file);
         } catch (err) {
             setError(err.response?.data?.error || "Failed to upload file");
         } finally {
@@ -75,11 +96,24 @@ const UploadForm = ({ onUploadSuccess }) => {
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400 group-hover:text-teal-400 transition-colors"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" x2="12" y1="3" y2="15"></line></svg>
                             </div>
                             <span className="text-gray-300 font-semibold text-lg">Click or Drag file here</span>
-                            <span className="text-gray-500 text-sm">Any file type supported</span>
+                            <span className="text-gray-500 text-sm">Any file type & size supported</span>
                         </>
                     )}
                 </div>
             </div>
+
+            {/* Upload progress bar */}
+            {uploading && progress > 0 && (
+                <div className="w-full z-10">
+                    <div className="w-full bg-gray-700/50 rounded-full h-3 overflow-hidden">
+                        <div
+                            className="h-full bg-gradient-to-r from-teal-500 to-blue-500 rounded-full transition-all duration-300"
+                            style={{ width: `${progress}%` }}
+                        ></div>
+                    </div>
+                    <p className="text-center text-teal-400 text-sm mt-2 font-semibold">{progress}% uploaded</p>
+                </div>
+            )}
 
             {error && <div className="w-full p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm font-medium flex items-center justify-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" x2="12" y1="8" y2="12"></line><line x1="12" x2="12.01" y1="16" y2="16"></line></svg>{error}</div>}
 
