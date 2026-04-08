@@ -10,7 +10,7 @@
 > **What to say:**
 > *"I recently built and deployed a full-stack file-sharing app called Transferly — basically like a mini WeTransfer. Users can upload files of any size, and the API instantly generates a secure, shareable download link.
 >
-> I built the backend using Node.js and Express, and I used Multer with Cloudinary to handle file uploads and store them in the cloud. I also integrated MongoDB Atlas to store the file metadata. To keep things clean, I used a MongoDB TTL index to automatically expire file records after 24 hours. The whole thing is deployed on Vercel — both front and backend — and it's live in production right now. It was a great full-stack project that taught me a lot about cloud storage, serverless deployment, and handling binary data end-to-end."*
+> I built the backend using Node.js and Express. The frontend uploads files directly to Cloudinary's cloud storage — completely bypassing the backend — which means there's no file size limit at all. Then the backend receives just the metadata and saves it to MongoDB Atlas. I also used a MongoDB TTL index to automatically expire file records after 24 hours. The whole thing is deployed on Vercel — both front and backend — and it's live in production right now. It was a great full-stack project that taught me a lot about cloud architecture, client-side uploads, serverless deployment, and scaling beyond platform limits."*
 
 ---
 
@@ -18,12 +18,13 @@
 **When they ask:** *"Can you walk me through the backend architecture?"* or *"Explain how the file upload process works."*
 
 **What to say (Step-by-Step):**
-1. **API Endpoint & Middleware:** *"The Node/Express server exposes an upload endpoint. I use `Multer` with `multer-storage-cloudinary` as middleware to parse the multipart form-data and stream the file directly to Cloudinary's cloud storage."*
-2. **Cloud Storage:** *"Instead of saving files to a local disk — which doesn't work on serverless platforms like Vercel — Cloudinary stores the file permanently and returns a secure URL that I save in the database."*
-3. **Security & Identification:** *"Instead of exposing database ObjectIDs to the client, I generate a unique `UUID v4` for each uploaded file to make download endpoints non-guessable and highly secure."*
-4. **Database Operations:** *"I save the file's core metadata—like its original name, file size, Cloudinary URL, and UUID—into MongoDB Atlas via Mongoose."*
-5. **Response:** *"The API then returns a shareable frontend URL containing the UUID, which the user can send to anyone."*
-6. **The Download Process:** *"When someone visits the download link, the frontend fetches file details from the backend API. When they click download, the backend looks up the file's Cloudinary URL and redirects them to it with the `fl_attachment` flag, which forces a download instead of a browser preview."*
+1. **Direct Client-Side Upload:** *"The React frontend uploads the file directly to Cloudinary using an unsigned upload preset — the file never touches my backend server at all. This completely bypasses Vercel's 4.5MB serverless body limit, so users can upload files of any size."*
+2. **Metadata Registration:** *"Once Cloudinary returns the secure URL, the frontend sends only the lightweight metadata (filename, URL, size) to my Express backend's `/register` endpoint. This is a tiny JSON payload — no binary data — so it's instant."*
+3. **Security & Identification:** *"The backend generates a unique `UUID v4` for each file to make download endpoints non-guessable and highly secure. I never expose database ObjectIDs to the client."*
+4. **Database Operations:** *"I save the file's core metadata—original name, file size, Cloudinary URL, and UUID—into MongoDB Atlas via Mongoose."*
+5. **Response:** *"The API returns a shareable frontend URL containing the UUID, which the user can send to anyone."*
+6. **The Download Process:** *"When someone visits the download link, the frontend fetches file details from the backend. When they click download, the backend looks up the Cloudinary URL and redirects them with the `fl_attachment` flag, forcing a download instead of a browser preview."*
+7. **Upload Progress:** *"Since the frontend handles the upload directly, I was able to add a real-time progress bar using Axios's `onUploadProgress` callback, giving users visual feedback during large uploads."*
 
 ---
 
@@ -32,11 +33,11 @@
 
 *(Pick one or two of these to talk about)*
 
-### Problem 1: Migrating from Local Storage to Cloud Storage
-* **Situation:** *"Originally, I was saving uploaded files to the server's local `/uploads` folder using Multer's disk storage. This worked perfectly in local development."*
-* **Task:** *"When I tried to deploy on Vercel, I discovered that Vercel is serverless — it doesn't give you a persistent file system. Any file saved to disk gets deleted almost immediately after the request ends."*
-* **Action:** *"I migrated the entire storage layer to Cloudinary. I swapped Multer's `diskStorage` for `multer-storage-cloudinary`, configured Cloudinary with environment variables, and updated the download endpoint to redirect to Cloudinary URLs instead of using `res.download()` with a local file path."*
-* **Result:** *"Files now persist permanently in the cloud, the backend is fully stateless and deploys cleanly on Vercel, and downloads work globally via Cloudinary's CDN."*
+### Problem 1: Overcoming Vercel's 4.5MB Body Size Limit
+* **Situation:** *"After migrating from local disk storage to Cloudinary via the backend, I discovered a new blocker — Vercel's serverless functions have a hard 4.5MB request body limit. Files larger than that would fail instantly."*
+* **Task:** *"I needed a way to support file uploads of any size while still running on Vercel's free tier."*
+* **Action:** *"I completely rearchitected the upload flow. Instead of routing files through the backend, I set up an unsigned Cloudinary upload preset and configured the React frontend to upload directly to Cloudinary's API. The frontend then sends only the tiny metadata (filename, URL, size) to the backend's new `/register` endpoint. The file binary never touches the backend at all."*
+* **Result:** *"Users can now upload files of any size with zero platform restrictions. It also added the bonus of a real-time upload progress bar, since the frontend handles the upload directly via Axios."*
 
 ### Problem 2: Serverless Deployment Challenges
 * **Situation:** *"When I first deployed the backend to Vercel, the serverless function kept crashing with a `FUNCTION_INVOCATION_FAILED` error."*
@@ -62,7 +63,7 @@
 **When they ask:** *"What would you add if you had more time?"* or *"How would you scale this application?"*
 
 **What to say:**
-* **AWS S3 Migration:** *"For even larger files, I'd consider migrating from Cloudinary to AWS S3 with pre-signed URLs. This would let clients upload directly to S3, completely bypassing my backend server and saving bandwidth."*
+* **AWS S3 with Pre-Signed URLs:** *"For even more control over storage, I'd consider migrating from Cloudinary to AWS S3 with pre-signed URLs for even more scalability and fine-grained access control."*
 * **Caching with Redis:** *"I'd introduce Redis to cache frequently accessed download links or metadata. This would significantly reduce the read load on MongoDB for popular files."*
 * **Email Service via Job Queue:** *"I would implement a job queue (like `BullMQ`) and integrate `Nodemailer` to process email notifications asynchronously, so users can email download links directly from the app."*
 * **Custom Domain:** *"I'd add a custom domain like `transferly.app` instead of the default Vercel URLs, to make it more professional and memorable."*
@@ -72,12 +73,12 @@
 ## 5. 🛠️ Quick Tech Stack Reference (For your memory)
 **If they ask specific tech questions, remember these keywords:**
 * **Backend Framework:** Node.js, Express.js.
-* **File Handling:** Multer + multer-storage-cloudinary (cloud-based file streaming).
+* **Upload Pattern:** Direct client-side upload to Cloudinary (unsigned preset), backend receives metadata only via `/register` endpoint.
 * **Cloud Storage:** Cloudinary (stores files, serves via CDN, supports `fl_attachment` for forced downloads).
 * **Database:** MongoDB Atlas, Mongoose ORM (schemas, models, TTL Indexes).
 * **Security:** CORS, UUID v4, environment variables (`dotenv`).
 * **Deployment:** Vercel (serverless functions for backend, static hosting for frontend).
-* **Frontend:** React, Vite, Tailwind CSS.
+* **Frontend:** React, Vite, Tailwind CSS, Axios (with `onUploadProgress` for real-time progress bar).
 
 ---
 
